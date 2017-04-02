@@ -1,0 +1,35 @@
+#Mixture of Gaussians (3/4 of the data come from N(0,1) and 1/4 from N(8,1)
+
+f <- function(x)
+{0.75 *exp((-x^2/2)/sqrt(2*pi))+ 0.25 *exp((-(x-8)^2/2)/sqrt(2*pi))
+}
+
+
+# RW Metropolis
+
+n.reps = 3000
+x.reps = rep(NA,n.reps)
+x.reps[1] = 0
+
+for (i in 2:n.reps) {
+  proposal = rnorm(1,x.reps[i-1],1)
+  log.mh = log(f(proposal))-log(f(x.reps[i-1]))
+  accept = log(runif(1))<log.mh 
+  
+  x.reps[i] = ifelse(accept, proposal, x.reps[i-1])
+  
+  # Auto-tune
+  if (i<n.reps/2)	1 = ifelse(accept, 1*1.001, 1/1.001)
+  stopifnot(!is.na(x.reps[i]))
+}
+length(unique(x.reps))/n.reps # empirical acceptance rate
+
+
+
+y <- seq(-4.95, 13.084, length=3000)
+mixture <- 0.75*dnorm(y,0,1)+0.25*dnorm(y,8,1) 
+plot(y, mixture)
+
+
+hist(x.reps, 100, freq=F, main="Histogram approximation")
+lines(y, mixture)
